@@ -1,0 +1,115 @@
+Now we have two Pcs, one with a fixed Subnet Mask (255.255.255.224)
+And one with a fixed IP (192.168.26.222)
+
+Now, the simple part first.
+Every Subnet has one Subnet Mask.
+So we just set the Subnet Mask to the fixed one
+
+Now here stuff gets tricky.
+We need to do what we did in the first Level, for the last two PCs, but instead of "Supernetting", we will "Subnet".
+That means instead of increasing our Hostbits by sacrificing Network Bits, we now do the opposite.
+
+Look at this quick example
+
+11111111 11111111 11111111 00000000
+This is a default 255.255.255.0 or also called a /24 Subnet Mask
+(/24, because 24 bits are 1s, so 24 Network Bits)
+This is essentially just a Computer way of drawing a progress bar.
+
+This is if we Supernet:
+11111111 11111111 11110000 00000000
+
+And this is if we Subnet:
+11111111 11111111 11111111 11110000
+
+We just switch some 1s or 0s to switch their meaning from Host to Network Bits.
+Now another way of viewing this, would be to get rid off the Hostbits.
+
+Normal: (/24)
+00000000
+Supernet: (/20)
+0000 00000000
+Subnet: (/28)
+0000
+
+Now this can be viewed as our buffer, where we "could" store values in, to differentiate our hosts
+And with less bits there are less hosts and vice versa.
+
+Now of course, the values that are stored in an IP address will always go from 0.0.0.0 to 255.255.255.255.
+So its not like we are making more or less space by Super/Subnetting.
+We are merely telling the machines, that they should interpret the number in our IP differently,
+based on our Subnet Mask
+
+So 
+100.100.100.100 in binary (01100100 01100100 01100100 01100100)
+Will be 
+/24 = 01100100 01100100 01100100 | 01100100 =	Network: 100.100.100 Host: 100
+/20 = 01100100 01100100 0110 | 0100 01100100 =	Network: 100.100.6 Host: 4.100
+/28 = 01100100 0110 | 0100 01100100 01100100 =	Network: 100.6 Host: 4.100.100
+
+As you can see, we get more or ways to store hosts
+
+Now coming back to our example.
+We have a 255.255.255.224 so a /27 Mask
+This means that we get (32-27=) 5 bits to store our Host
+
+Now this means, that our possible storage looks like this:
+
+				Binary				Decimal
+lowest host:	(0...0)00000		0.0.0.0
+highest host:	(0...0)11111		0.0.0.31
+One after:		(0...1)00000		0.0.0.32
+We keep increasing our Host bits for each host, until we reach 11111.
+The next higher IP adress flips the left bit from theese ones, which is interpreted as a host bit.
+This means that we will have changed the Network, and are back at 00000 in that Network.
+
+So essentially, our Networks go from 0 to 31, 
+32-63, 
+64-95
+....
+until 224-255
+At which point, our IP goes into the next decimal range:
+x.x.y.255 -> x.x.y+1.0
+And the whole process repeats itself
+
+Now for our Pc this means, that it will be in a Subnet x-x+31 (x>=0 and x+31 <= 255)
+Our Pc in my example (192.168.26.222) is in the 222 subnet.
+We can find out the ranges for this number by doing the following:
+222 / 32 = 6,9375
+rounded down thats 6
+6*32 = 192 <-Thats our range start value
+192+(32-1) = 223 <- Thats our range end value
+
+So our Pc is in the subnet with the IPs 192.168.26.193 to 192.168.26.223
+Remove the extreme bits like in level 1, and remove the exact number we are matching (222)
+
+And we are left with 192.168.26.194 - 192.168.26.221
+Pick a number, any number. Thats your new IP.
+
+----------------
+
+Now, for the next example, our Masks are fixed (255.255.255.252 and/or /30).
+And we get two IPs (127.0.0.1 and 127.0.0.4)
+
+The point of this exercise is showing that the 127.x.x.x IP is reserved, its nor for us to use.
+Its for soemthign called the "Loopback Address". But that isnt important.
+So pick any different value for the first 3 blocks instead.
+I will go with 126.0.0
+
+Now we have a /30 mask, meaning that we have (32-30=) 2 host bits.
+That means, looking at what we did before, really quickly:
+We get 2^2 = 4 different numbers.
+So our ranges go from 00 to 11
+So from 0 to 3.
+So the subnets IPs are (withour extreme IPs)
+1-2
+5-6
+9-10
+...
+249-250
+253-254
+
+Pick any of theese number pairs for our the last part of our IP and you are good
+
+I want to be funny, so I will choose 69 and 70
+So we end up with 126.0.0.69 and 126.0.0.70

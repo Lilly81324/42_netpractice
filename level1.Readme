@@ -1,0 +1,47 @@
+Both the interfaces of the PCs have the same Mask, now we jsut need to get them in the same Network.
+
+We have the mask 255.255.255.0 or /24
+This means that the last 8 bits are Host bits
+So we get 2^8 different IPs
+This starts at ?.0 and ends in ?.255
+So now we just need to combine that with the fixed IP we alreay have
+104.96.23.12
+
+This shows that our possible IPs range from
+104.96.23.0 to 104.96.23.255
+However, the first and last IP are special. 
+They are reserved for the Network Adress (104.96.23.0)
+And the Broadcast Adress (104.96.23.255)
+
+Theese two different unique IPs are in every subnet.
+For one all Host bits are set to 0, for the other all are set to 1
+This behaviour will lead to funny quirks later on
+
+For now, all we need to know is that the first and last number in our Subnets IP range are off-limits or invalid to use.
+Which means we are now left only with
+104.96.23.1 to 104.96.23.254
+Giving the other PC any of theese values (that isnt exactly the IP of the other PC)
+will put them in the same Subnet
+
+Machines in the same Subnet have a direct connection, so the two PCs are now connected
+Meaning they can both play Minecraft locally together, instead of buying an expensive Nitrado Server
+Also it means that our job here is done.
+
+------------------
+
+For the other PCs we have a different Mask though
+255.255.0.0 or /16
+and one Pc has the IP 211.191.136.75
+
+With this Mask, we sacrifice (24-16=) 8 Network bits, to make room for more possible hosts.
+This means, that the range of possible hosts also massively increases
+Since now we get to have 2^16 -2 possible IPs
+
+So now the third part of our IP also acts as an identifier for the host
+Which means we now get a range of
+211.191.0.0 - 211.191.255.255
+Remove the extreme IPs for the Network and Broadcast Adress
+211.191.0.1 - 211.191.255.254
+
+So again, picking any of theese Numbers for our Ip would put this Pc in the same Subnet, as the other one.
+And that means ... that we are done

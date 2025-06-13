@@ -1,0 +1,116 @@
+This exercise is about Routing
+
+We have a Router, with fixed Interfaces for 2 Subnets
+R1:	IP: 92.128.98.126	Mask: 255.255.255.128
+R2:	IP: 166.89.5.254	Mask: 255.255.192.0
+
+We get two PC interfaces, which each get a route.
+PC Bs routes target is fixed to "default"
+
+First things first.
+We want to put our PCs in the same Network as their subnets router interface.
+That means setting the same Subnet Mask, and doing the usual Subnetting Magic for Machine A and R1
+
+Copy and paste the Subnet Mask.
+Notice its .128 again.
+Be happy you got an easy one.
+See in which range the IP of R1 is (126).
+126 is in 1-126.
+So we set A1 to:
+92.128.98.1
+255.255.255.128
+Boom, connected to router. We are getting good at this.
+
+-------------
+
+Now, connecting B is a bit trickier, because it requires Supernetting instead of Subnetting.
+We did this in one of the earlier exercises already, I think.
+But I will clarify it here again.
+
+We have our default Subnet Mask:
+255.255.255.0
+255.255.xxx.yyy
+If we change the 4th column (y), then its subnetting.
+This is what we did before, with the smaller host ranges, where we make more Subnets out of 1.
+If we change the 3rd colum (x), then its Supernetting.
+This is essentially the same as subnetting, but the other way around.
+Instead of making our ranges smaller then 255, by halving it, we increase our ranges, by doubling them.
+
+For Supernetting our range gets bigger then x.x.x.0 - x.x.x.255.
+Naturally this means stealing some network bits, (the x here) to make room to store bigger numbers.
+Simple example:
+11111111 11111111 11111111 00000000 
+-> 11111111 11111111 11111110 00000000
+
+This means, we now use one more bit to store our host ranges.
+In binary this is easy to understand, but in decimal its a bit tricker.
+So let me give some examples:
+Subnet 0: x.x.0.0 - x.x.1.255
+Subnet 1: x.x.2.0 - x.x.3.255
+...
+Subnet 127: x.x.254.0 - x.x.255.255
+
+So if you think about it, in binary we stole the 0/1 positions bit.
+This means that only every third time we wrap around or 255, the Subnet actually changes.
+Because only then do we change a host bit.
+
+So now this behaviour results in 3 things:
+1)	We got less subnets and more data ranges per subnet. How much more? 2^[amount of bits sacrificed] * 255
+2)	We can use extremist values, if they are not at the end of the subnet.
+	Example for Submask 255.255.254.0:
+	Extreme values are: x.x.0.0 and x.x.1.255.
+	This means we got to use extremists like x.x.0.255 and x.x.1.0
+3)	Now the 3rd column of the IP might change, if we change the Host.
+	This is like the inverted behaviour of our 4th column changing resulting in different Subnets.
+
+
+So now we have a different formula for Data Ranges:
+
+SUPERNETTING:
+Mask -> CIDR:
+Masks third bits:	.255.	.254.	.250.	.248.	.240.	.224.	.192.	.128.	.0.
+Respective CIDR:	24		23		22		21		20		19		18		17		16
+					1		2		4		8		16		32		64		128
+example: .248 -> 21
+
+Get exponent:
+24 - CIDR
+example: 24-21 = 3
+
+Get size of data range:
+2^(exponent)
+example: 2^3 = 8
+
+And thats basically it
+Your size signifies the number in your third column, at which point you will enter a new subnet.
+You now know that your data range goes from
+x.x.0.0 to x.x.7.255
+x.x.8.0 will be the first number in the next subnet, which is:
+x.x.8.0 to x.x.15.255
+
+You always start with your 4th column at 0, and your last number as 255.
+Keep in mind this is WITH the extreme values.
+So your actual data range should be something like:
+x.x.0.1 to x.x.[size]-1.254
+
+And of course, your data ranges repeat like this:
+x.x.0*[size].1 to	x.x.1*[size]-1.254
+x.x.1*[size].1 to	x.x.2*[size]-1.254
+x.x.2*[size].1 to	x.x.3*[size]-1.254
+...
+
+So for our example, we have the SubnetMask 255.255.192.0
+So we get a CIDR of 18, an exponent of 6, so a size of 2^6 = 64
+Our data ranges are from
+166.89.0.1		to 166.89.63.254
+166.89.64.1		to 166.89.127.254
+166.89.128.1	to 166.89.191.254
+166.89.192.1	to 166.89.255.254
+
+Our given Ip for R2 is 166.89.5.254, which is in the first data range.
+So I will give our PC B1 the IP 166.89.63.254
+(and the mask /18)
+
+---------
+
+Now onto routing

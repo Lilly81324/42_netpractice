@@ -1,0 +1,50 @@
+Honestly not quite sure what this one was all about.
+I guess its about showing that a router has multiple interfaces for each subnet?
+
+Well we are given 2 fixed interfaces for a router
+R3	IP:90.168.115.244	Mask: 255.255.255.192
+R2	IP:90.168.115.1		Mask: 255.255.255.128
+We are also given a free interface in the router R1
+And two PC interfaces, one of which 
+A1 has a fixed IP: 90.168.115.132
+
+Now looking at this we notice, that we need to put the two PCs in the same subnet.
+So that means, the same Masks, and IPs in the same range.
+Also, we will need exactly one (1) router interface in that Subnet.
+
+Now looking at this we can see, that router R2 and PC A1 have a very similar fixed IP
+90.168.115.1 and 90.168.115.132
+
+So it could be usefull to use R2s subnet to connect our PCs to the router.
+
+However, if we want to connect with R2, we need the same Subnet Mask.
+And if we appply the Subnet Mask to A1, we can see, that we have 2 possible subnets for our IPs.
+And sadly, R2 is in the first one, and A2 is in the second one.
+
+R2: 90.168.115.1	is in .1-.126
+A1: 90.168.115.132	is in .129-.254
+
+This means, that we cannot connect to this router.
+
+So lets use the free router, to amend this.
+
+We will give the free router a small IP from the range, that A1 is in.
+I will go with 129 (90.168.115.127)
+Of course, we will also need the same Subnet Mask as in R2
+
+Now if we give the same Subnet Mask to A1, we get
+R1: 90.168.115.129	255.255.255.128
+A1: 90.168.115.132	255.255.255.128
+
+And this should allow us to create a connection between the Router and A1
+
+Now we just need to put B1 in the same Subnet as well.
+So we just pick another number from our Subnets Data Range.
+I noticed when picking mine, that there seems to be a some limiting factor,
+which only allowed numbers between 130 and 191.
+This is probably due to the R3 router interfering, since it would be in the range
+90.168.115.192 to 90.168.115.255
+
+So just make sure the number you choose doesnt interfere with the other routers.
+
+So I chose 191, cause I am politically extreme, I like living on the edge to danger.
