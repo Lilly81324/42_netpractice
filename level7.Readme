@@ -1,0 +1,61 @@
+This exercise is about routing back and forth between multiple routers, in the same subnet.
+
+We are provided with 2 interfaces of one router, with a fixed IP each.
+R11 has 115.198.14.1
+R12 has 115.198.14.254
+
+So now it is our job to connect 
+R1 and A1
+R2 and C1
+R1 and R2
+
+Now, in the subject name it says:
+host dev.non-real.net needs to communicate with 
+host accounting.non-real.net
+And I assumed that the same usage ob non-real.net is supposed to mean, 
+that both parties are in the same network, but in different subnetworks.
+
+I chose the /26 Mask for this, as it gives us 64 different hosts and 4 subnets to work with.
+
+So lets put our parties in different subnets.
+We have
+1: 0-63
+2: 64-127
+3: 128-191
+4: 192-255
+
+For brevity, I will shorten "115.198.14" to just 'x'
+
+First we will establish the 1 subnet. It will be for A1 and R11.
+So we will give A1s first valid adress x.1 to R11 and x.2 to A1.
+
+Then for our 2 subnets, with R22 and C1. It will be in the second data range,
+and I will choose the first and second numbers again.
+x.65 for R22 and x.66 for C1.
+
+Our last subnet will be to connect both routers together, in the same subnet.
+It will already be in a fixed range, due to R12 having a fixed IP of x.254.
+So this will be in our last data range, and I will use x.193 for R21.
+
+Now we have three subnets, 1, 2, and 4.
+In each of them, we have the parts connected.
+
+Now lets work our magic to allow comunication between the subnets.
+
+First, the PCs, our sources.
+They will want to go from themself, to the other one and back.
+So we will use this formula:
+[Other PCs IP]/[Other PCs Mask] => [This subnets router interface]
+As we want to move through this router, to the other PC.
+So for A1 this will be:
+x.66/26 => x.1
+And for C1:
+x.2/26 => x.65
+
+Now for our routers things are slightly different.
+Since we are just moving traffick from one router to the other, it would be easier to make a more general rule.
+So we just say "Regardless of what I get, move it to the other router".
+R1: default => 115.198.14.193
+R2: default => 115.198.14.254
+
+And now everything should work.

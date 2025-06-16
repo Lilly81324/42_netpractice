@@ -1,0 +1,94 @@
+This one is about connecting two subnets to one website on the interent.
+
+Unlike the normal subjects, where we went from the bottom up, 
+starting with PCs and then moving higher, we do the opposite here.
+We start at the website, since it holds a vital vlue about the structure of our PCs.
+
+We have a PC D1 with a fixed Network Mask 255.255.255.240 or /28.
+We have a router R2 with a half fiexed route:
+_____ => 158.132.139.62 (second half is fixed)
+We have a second router R1 with 2 possible routes, one of which is fixed:
+0.0.0.0/0 => 163.175.250.1
+R1 also has a fixed interface towards our website:
+IP: 163.175.250.12 Mask: 255.255.255.240 or /28
+And lastly, the website has a half fixed route
+158.132.139.0/26 (fixed) => _________
+
+So let us first say what we want:
+The PCs and internet should be able to establish a connection between all of them.
+All should be able to communicate with any other.
+
+To get this we need:
+The two routers have their own subnet to communicate.
+Both PCs should be in different Subnets to communicate over the router only.
+So we will need 3 subnets.
+Our PCs will need public IP adresses to communicate directly with the internet.
+
+So, lets start with the clue I talked about earlier, and the subnets.
+The clue I meant was "158.132.139.0/26" the IP that our internet will be sending connections back to.
+This means that if we want the websites to return our packages that we request, we need to be in that subnet.
+And by "we" I mean both PCs, and the router.
+
+So we get the IPs 158.132.139.1 through 158.132.139.63/26.
+Since 2^(32-26) = 64.
+This means that all our subnets should be in this range.
+
+Now taking another look at the mask that is already fixed for one of our PCs, 
+we can see that its a .240 so a /28 mask.
+That means we get to store ((2^(32-28)) = 16) IPs in for this PC, from our bigger 64 range.
+I decided it would also be fair to give the other PC the same treatment. (Doesnt have to be done this way)
+
+Now another clue to the structure of our subnet is in the Router R2s routes gate: "158.132.139.62".
+This means that our router will send its packages from the PCs to this next IP.
+Now this means that we have to use this exact IP for the router R1.
+Since that is where we want to send our pacckages on their way to the internet.
+
+Looking at this Ip, we can seee, that it is part of our (158.132.139.1 - 158.132.139.63/26)
+range from earlier.
+So we already got a maximum size and a value our subnet needs to include.
+Since we need to use a quarter of our subnet for one Pc, and another for our other Pc, we are left with hald the range.
+So now we could use all 32 values for our router subnet, or just 16.
+Both are fine to choose, so you can use either.
+I like communism, so I decided to also make it a quarter of our range, wasting the rest.
+If you want to use 32 IPs, choose a /27 mask, for 16 IPs, choose a /28 mask.
+So now we can set the Subnet Masks of our PC Interfaces, as well as all 4 router Interfaces, to 28 or 255.255.255.240.
+
+Now we should choose which ranges we want to use for which subnet.
+The only one that is fixed, is the router subnet being in the last data range.
+1-14
+17-30
+33-46
+49-62 <- router subnet
+
+I chose the 1 range for PC D and the 17 range for PC C.
+So now we can set our PCs, and their router interfaces.
+D1:		158.132.139.2/28
+R23:	158.132.139.1/28
+R22:	158.132.139.17/28
+C1:		158.132.139.18/28
+R21:	158.132.139.61/28
+R13:	158.132.139.12/28
+
+Following this, we dont know the IP of the website, but we *do* know that our ISP does.
+So we can set the routing of the PCs to default, going through their router Interfaces.
+Route D: default => 158.132.139.1
+Route C: default => 158.132.139.17
+
+Following this, we need to tell our router to also keep pushing our default packages towards the website.
+Router R2: default => 158.132.139.62
+
+Thankfully, R1 already comes with a default rule to send packages to the target website.
+So this means our PCs can comunicate with one another, and send packages to our website.
+Well we are still missing the way back.
+
+For this, we need to tell our Website, to route anything that wants to move into any of our awesome subnets,
+(158.132.139.0/26), that it should move through the R12 end of Router R1.
+Once we did this, our packages have arrived at R1, but they still need one more step to come home.
+
+And that is routing anything going to our awesome subnet (158.132.139.0/26) to move into R2.
+So we say that the gate for our route is R2s R21 adress.
+158.132.139.0/26 => 158.132.139.61
+
+Now our packages arrived back at our router, safely in our subnet for distribution according to each package.
+
+Yay :3
