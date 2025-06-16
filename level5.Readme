@@ -51,7 +51,7 @@ Subnet 1: x.x.2.0 - x.x.3.255
 Subnet 127: x.x.254.0 - x.x.255.255
 
 So if you think about it, in binary we stole the 0/1 positions bit.
-This means that only every third time we wrap around or 255, the Subnet actually changes.
+This means that only every second time we wrap around or 255, the Subnet actually changes.
 Because only then do we change a host bit.
 
 So now this behaviour results in 3 things:
@@ -108,9 +108,70 @@ Our data ranges are from
 166.89.192.1	to 166.89.255.254
 
 Our given Ip for R2 is 166.89.5.254, which is in the first data range.
-So I will give our PC B1 the IP 166.89.63.254
+So I will give our PC B1 the IP 166.89.63.254, as it is the last usable value
 (and the mask /18)
+
+So now both PCs should be able to connect to the router
 
 ---------
 
 Now onto routing
+
+Routing consists of two values
+1)	The route, which defines the final adress you wish to connect to.
+	For this, you usually choose the Adress of the Subnet, that your target Interface is in.
+	By that I mean this subnets Network Adress. 
+	Remember those extreme values for IP adresses, which we were not allowed to use?
+	Yep, thats the one we need now.
+	Essentially, we want the smallest possible IP for that Subnet, so we can send our packages there.
+	From there, it is up to the Subnets devices, who wants this package.
+	So we just find our data range for the current subject, and use the smallest / first value.
+2)	The gate, also called Next-hop. Which defines the next interface to direct our traffic towards.
+	If the Network Adress is the adress of the home to deliver the package to, then our gates
+	are like roadsigns, that keep pointing in the direction we need to go, to move through the internet.
+	If we want to route from a PC to outside the network, then we will need to set the gate as the IP of our subnets router interface.
+
+So if we want to connect A1 towards B1, then we do:
+
+For our route we will set the Network Adress of R2.
+We know from before, that R2s IPs range from 166.89.0.0-166.89.63.255
+(this is including extreme values)
+So now the lowest possible value would be
+166.89.0.0
+Alternatively, you could get this value by setting all host bits to 0, and all network bits to 1.
+
+For our gate, we know the IP adress of this subnets router interface, which is R1s address.
+So 92.128.98.126
+
+Now we are almost done with setting up this PCs routing, just one more thing remains.
+Since the gate will always be the same Subnet Mask as our PCs, we wont need to say so in the routing.
+Actually doing so will break our connection for some reason.
+But for our route, we will be going to a different Subnet Mask. (/18 instead of /25)
+So we say so in the IP
+
+Final Route:
+166.89.0.0/18 => 92.128.98.126
+(go to the Network 166.89.0.0 with Mask 255.255.192.0 by moving through 92.128.98.126)
+
+Next, we will connect our B1 machine.
+So we would do the exact same thing here.
+Our route will be R1s Network Adress, which will be
+92.128.98.0
+with the Mask 255.255.255.128 or /25
+92.128.98.0/25
+
+However, we already have a route set up, "default".
+To explain the usage, we need to establish one more thing about routing: the package.
+Its not exactly like a real package, since apart from the route and gate, interfaces can also view some contents.
+Specifically, there will always be a target adress inside our package.
+This specifies the specific adress, like google, amazon or reddit.com.
+If our router does not have a specific route towards any of theese sites, then it will falla back to "default".
+Which means handing our package to your local ISP, which looks at the final address and then routes it accordingly.
+
+For our example, this just means that we assume that our package specifies that it wants to go to A1 from B1.
+Then our package will be sent to next hop, which is our router, who will look in the package, and route it accordingly.
+
+So that means we only need to take care of the gate for B1.
+We know B1s interface is R2, which has an IP of 166.89.5.254
+
+So we set that and viola, bongornio, our connection between both PCs is established.

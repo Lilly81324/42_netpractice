@@ -1,0 +1,46 @@
+Alright, interfacing between PCs is cool, but I cannot get my cute pictures of animals without the internet.
+
+So now lets connect to a website!
+
+For this exercise I get a website I that routes through a fixed gate 163.172.250.12.
+An interface on a router R2 for that website with fixed IP and Mask:
+IP: 163.172.250.12
+Mask: 255.255.255.240
+A router interface R that routes to a fixed gate 163.172.250.1
+A different router interface R1 with a fixed Mask 255.255.255.128
+And a PC A1 interface with a fixed IP 83.110.5.227
+
+First things first, set our PC A1 to the mask from R1.
+So 255.255.255.128 or /25
+
+Now get the smallest possible valid IP adress for our routers IP, so that it is still in A1s subnet.
+CIDR 25 -> 32-25=7 host bits -> 2^7=128 IPs -> 
+x.0 - x.127 
+and x.128 - x.255
+227 is in the second range.
+So we use 83.110.5.129.
+
+Now lets route our PC onto the internet.
+Since we dont know what adress our PC wants to move to, we will use the default route.
+Our gate will be our PCs subnet interfaces IP.
+So we get:
+default => 83.110.5.129
+
+Yes, technically we could connect to a specific IP if we knew it.
+But in this case we dont. 163.172.250.12 is the routers IP.
+And 163.172.250.1 might only be another router or server, not the final website.
+So it is muuuch easier to just send our request to our ISP, and let them figure things out.
+This is what you pay for, after all.
+They keep track of routing, and will get you to the website you want, so you just need to fall back on their services.
+
+Now onto our website. In order for it to be able to send back packets, we need to tell it, where.
+So we tell it, that in order to reach back to our PC, it needs to go through its own subnet.
+So we say:
+83.110.5.227/25 => 163.172.250.12
+So now our website knows how to send packets back to our PC.
+
+Now onto the last thing. The websites router.
+Since its the websites, it should always redirect to the next step towards the website. (163.172.250.1)
+For the gate, so the final target, we dont know what exactly the IP is, so we will just call the default rule.
+That means we will parse our traffick that comes to this router to the next device, 
+without worrying about having to define the websites final IP adress.
