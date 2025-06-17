@@ -1,0 +1,102 @@
+Now things are getting complicated, but dont worry, this is nothing new.
+We are just doing what we did before with more devices.
+Its still connecting machines through routers using Sub- and Supernetting.
+
+Fixed:
+Router interface towards A and B called R11 with Mask 255.255.255.128
+Router R1 route default => 163.172.250.1
+Router R1 interface R12 towards Website: 163.172.250.12 255.255.255.240
+Three half fixed routing rules for the website, each with the gate of 163.172.250.12
+A half fixed routing rule for the router R2, with the route of 0.0.0.0/0
+Mask for the router R2 for C and D on the R1-R2 side is 255.255.255.252
+Mask for router R2 interface R23 towards D1 is /18
+C has half fixed route with route 0.0.0.0/0
+D has half fixed route with gate 93.204.111.166
+
+So, lets fill out what is already basically fixed.
+Our D always hops next to 93.204.111.166, meaning that this is the Ip for the next step towards outside.
+So that will be the IP for R23, as it is the interface for D.
+R23: 93.204.111.166/18
+
+We also want to establish a more general connection to the internet, nut just one IP.
+So we set Ds route to:
+default => 93.204.111.166
+
+Now for D we will use R23s subnet Mask /18 and then put it in the same net, but different subnet.
+So pick any IP between (24-18=6, 2^6=64, Round Down(111/64) = 1)
+93.204.(1*64).1 - 93.204.(2*64-1).254
+93.204.64.1 - 93.204.127.254
+
+Next up, lets connect D and C so we can fulfill the second goal.
+They should be in a different subnet, so that they can have two different interfaces.
+For simplicities sake, I chose the same subnet mask and the next biggest IP range
+93.204.128.1 - 93.204.191.254
+Lets go with 
+R22: 93.204.128.1/18
+C1: 93.204.128.2/18
+Finish our connection of, by routing C towards our router with a default rule:
+C route: 0.0.0.0/0 => 93.204.128.1
+
+Now we should have D and C connected and the goal should be fulfilled.
+Lets connect them to the internet, so they can watch their Linux Tech Tips.
+
+For R21 we already have a Mask of .252, which means we only get 4 IPs for this subnet, 
+with 2 valid and usable ones.
+So since we use 
+93.204 = x
+x.64.1 - x.191.254
+I chose the next bigger range, which will be.
+x.192.0 - x.192.4 (with extremes)
+So we can give our R21:
+93.204.192.1
+And we will put R13 in the same subnet for a connection, so it will get the other IP.
+IP: 93.204.192.2 Mask: /30 or 255.255.255.252
+
+Then lets tell our R2, to direct any default traffic towards R1:
+0.0.0.0/0 => 93.204.192.2
+
+So now we should have a one way connection from C and D towards the internet.
+Lets bring those packets home.
+
+The internet does not have a rule, by which to send our packages to our network.
+But it has premade rules to send things to R1, which is in the right direction.
+So we will hijack one of theese rules to direct trafick to D and C.
+So we simply neeed to tell the roule, that the route will be towards the Network Adress,
+of the subnet from C and from D.
+Ds Network Address is 93.204.64.0/18 (as it is the lowest possible IP in that Subnet)
+Cs Network Address is 93.204.128.0/18
+So we will set the internets routes to:
+93.204.64.0/18		=> 163.172.250.12
+93.204.64.128/18	=> 163.172.250.12
+
+Now we are one step closer, our packages now hopped to R1, but R1 does not know what to do with them.
+This is because the route / target is not part of R1s subnets, but R2s.
+So we do the same thing as in the internet, telling it to redirect to R2:
+93.204.64.0/18		=> 93.204.192.1
+93.204.64.128/18	=> 93.204.192.1
+
+And boom, packages for C and D have arrived.
+
+-----------
+
+Now onto B and A.
+Since they are not connected via Router, but via Switch, they will have to be in the same subnet.
+We have the fixed Mask 255.255.255.128, meaning we get the ranges x.1-x.126 or x.129-x.254
+
+I like them small, so I will use x.1 for the routers interface.
+x.2 for A1 and x.3 for B1.
+Now, what should our IP network be?
+There is nothing fixed or predefined, so as long as we dont use private or existing ones, any network will be fine.
+So lets go with 100.100.100.0
+So:
+B1: 100.100.100.3/25
+A1: 100.100.100.2/25
+R11:100.100.100.1/25
+
+Routing:
+B: default => 100.100.100.1
+A: default => 100.100.100.1
+
+Now we should have a connection to the other PCs, and a one-way to the internet.
+Route our internet back to our 100.100.100.0/25 network and you are done.
+100.100.100.0 => 163.172.250.12
