@@ -1,0 +1,41 @@
+This exercise is about working with a lot of pre established subnets, 
+and making our own space.
+Essentially, since we fix only some of the broken parts of this network, there is a lot of fixed things.
+
+I wont explaing basic things anymore, and focus on what is important for this subject specifically.
+
+So, first things first, we got three subnets for PCs, and one for two routers.
+They are all in the 150.178.213.0-150.178.213.255 range, so I will shorten
+150.178.213 = x
+
+We can already fill in a lot of simple stuff, like finishing the already existing x.0-x.127 network off.
+
+The established subnets are:
+H4: x.131 255.255.255.192
+so: x.128 to x.191
+H2 and H1: 150.178.213.1 255.255.255.128
+so: x.0 to x.127
+R21 and R13: 150.178.213.253 255.255.255.252
+so: x.252 - x.255
+
+So we have occupied:
+0-127, 128-191, 252-255
+leaving free:
+192 - 251 (= 60)
+With 60 adresses free, I decided to use 32 for our H3 network.
+For 32 we would need a flag of /27.
+We would start our range at the nearest multiple of 32, which is 192.
+So it ends up working out and we get the range x.192 - x.223
+So choose values from this for our router interface, and remaining PC.
+I chose x.193 for the router and x.222 for the PC H3
+
+Now just fill in the 2 missing routes.
+Thats 1) for R1, telling it to redirect traffic to our new subnet x.192/27 => fixed
+Now we should have all PCs connected, and one-way internet connections.
+And then for 2) the last route will lead back all packages to R1, which are designed for anything in our subnet.
+So we set the route too be a Newtork Adress which encompass all our 4 subnets.
+That would include x.0-x.255
+So our mask will be /24, which means the final IP is:
+150.178.213.0/24
+
+Congratulations, you really practiced your Net!
